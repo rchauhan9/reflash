@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { useClerk } from '@clerk/clerk-react';
 
 // Menu items.
 const items = [
@@ -42,6 +43,8 @@ const items = [
 ]
 
 export function AppSidebar() {
+  const { signOut } = useClerk();
+
   return (
     <Sidebar collapsible='icon'>
       <SidebarContent>
@@ -84,7 +87,7 @@ export function AppSidebar() {
                   <span>Billing</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <span>Sign out</span>
+                  <a onClick={() => signOut({redirectUrl: '/login'})}><span>Sign out</span></a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

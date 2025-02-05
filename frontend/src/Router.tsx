@@ -7,11 +7,21 @@ import Dashboard from "./pages/Dashboard";
 import Work from "./pages/Work";
 import Calendar from "./pages/Calendar";
 import Notifications from "./pages/Notifications";
+import LoginPage from '@/pages/auth/Login';
+import SignUpPage from '@/pages/auth/SignUp';
 
 export const router = createBrowserRouter([
     {
+        path: "/login",
+        element: <LoginPage />
+    },
+    {
+      path: "/signup",
+        element: <SignUpPage />
+    },
+    {
         path: "/",
-        element: <Applayout />,
+        element: <Applayout children=''/>,
         children: [
             {
                 path: "home",
