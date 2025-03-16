@@ -1,0 +1,18 @@
+[tool.pdm.build]
+includes = []
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[project]
+authors = [
+    {name = "rchauhan9", email = "rajan@autone.io"},
+]
+requires-python = "==3.12.*"
+dependencies = [
+    "pydantic-ai==0.0.20",
+]
+name = "agent-api"
+version = "0.1.0"
+description = "A sample project to test agents"
