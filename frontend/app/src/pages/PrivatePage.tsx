@@ -15,8 +15,8 @@ export default function PrivatePage({ children }: { children: React.ReactNode })
   }
 
   return (
-    <>
+    <div className='bg-muted'>
       <SignedIn>{children}</SignedIn>
-    </>
+    </div>
   );
 }

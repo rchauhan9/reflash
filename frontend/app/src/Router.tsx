@@ -3,7 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { Applayout } from './components/layouts/AppLayout';
 
 import NoMatch from './pages/NoMatch';
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import Work from './pages/Work';
 import Calendar from './pages/Calendar';
 import Notifications from './pages/Notifications';
@@ -26,7 +26,7 @@ export const router = createBrowserRouter(
       children: [
         {
           path: 'home',
-          element: <Dashboard />,
+          element: <Home />,
         },
         {
           path: 'work',
