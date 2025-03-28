@@ -6,7 +6,9 @@ import (
 )
 
 type Repository interface {
-	CreateStudy(ctx context.Context) (Study, error)
+	CreateStudy(ctx context.Context) (StudyProject, error)
+	CreateCards(ctx context.Context, studyProjectID string, cards []StudyProjectCard) error
+	DeleteCards(ctx context.Context, studyProjectID string) error
 }
 
 func NewRepository(dbPool db.Pool) Repository {
@@ -19,7 +21,15 @@ type repository struct {
 	pool db.Pool
 }
 
-func (r *repository) CreateStudy(ctx context.Context) (Study, error) {
+func (r *repository) CreateStudy(ctx context.Context) (StudyProject, error) {
 
-	return Study{}, nil
+	return StudyProject{}, nil
+}
+
+func (r *repository) CreateCards(ctx context.Context, studyProjectID string, cards []StudyProjectCard) error {
+	return nil
+}
+
+func (r *repository) DeleteCards(ctx context.Context, studyProjectID string) error {
+	return nil
 }
