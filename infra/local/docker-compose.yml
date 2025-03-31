@@ -7,9 +7,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./entrypoint.sh:/entrypoint.sh
-      - ./create_databases.sh:/startup-initdb.d/create_databases.sh
-      - ./create_databases.sh:/docker-entrypoint-initdb.d/create_databases.sh
+      - ./postgres/entrypoint.sh:/entrypoint.sh
+      - ./postgres/create_databases.sh:/startup-initdb.d/create_databases.sh
+      - ./postgres/create_databases.sh:/docker-entrypoint-initdb.d/create_databases.sh
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres

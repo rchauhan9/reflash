@@ -6,6 +6,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/pkg/errors"
 	"github.com/rchauhan9/reflash/monolith/services/hello"
+	"github.com/rchauhan9/reflash/monolith/services/study"
 	"github.com/rchauhan9/reflash/monolith/utils"
 	"net/http"
 	"os"
@@ -20,10 +21,16 @@ func realMain() int {
 	logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
 
 	appContext := &utils.AppContext{
-		Router: router,
-		Logger: logger,
+		Context: ctx,
+		Router:  router,
+		Logger:  logger,
 	}
 	hello.RegisterRoutes(appContext)
+	err := study.RegisterRoutes(appContext)
+	if err != nil {
+		level.Error(logger).Log("err", errors.Wrap(err, "error registering study routes"))
+		return 1
+	}
 
 	srv := &http.Server{
 		Addr:    ":8080",

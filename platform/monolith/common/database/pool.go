@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 
-	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -12,29 +12,29 @@ import (
 type Pool interface {
 	Close()
 
-	Acquire(ctx context.Context) (*pgxpool.Conn, error)
+	Acquire(ctx context.Context) (c *pgxpool.Conn, err error)
 
 	AcquireFunc(ctx context.Context, f func(*pgxpool.Conn) error) error
 
 	AcquireAllIdle(ctx context.Context) []*pgxpool.Conn
 
+	Reset()
+
 	Config() *pgxpool.Config
 
 	Stat() *pgxpool.Stat
 
-	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 
-	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 
-	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 
 	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
 
 	Begin(ctx context.Context) (pgx.Tx, error)
 
-	BeginFunc(ctx context.Context, f func(pgx.Tx) error) error
-
-	BeginTxFunc(ctx context.Context, txOptions pgx.TxOptions, f func(pgx.Tx) error) error
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 
 	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
 

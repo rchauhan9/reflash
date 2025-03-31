@@ -3,8 +3,8 @@
 set -eu
 
 DATABASES=(
-  "cenator"
-  "cenator_testing"
+  "study"
+  "study_testing"
 )
 
 _psql() {
