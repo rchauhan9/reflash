@@ -4,29 +4,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/log"
-	"github.com/pkg/errors"
-	"github.com/rchauhan9/reflash/monolith/common/clients/card_creator"
 	"github.com/rchauhan9/reflash/monolith/common/middlewares/logging"
-	"github.com/rchauhan9/reflash/monolith/utils"
 	"net/http"
 )
 
-func RegisterRoutes(appContext *utils.AppContext) error {
-
-	pool, err := NewDatabasePool(appContext.Context, "postgres://postgres:password@localhost:5432/postgres")
-	if err != nil {
-		return errors.Wrapf(err, "failed to create database pool")
-	}
-	rep := NewRepository(pool)
-	createCardClient := card_creator.NewClient()
-	svc := NewService(rep, createCardClient)
+func RegisterRoutes(svc Service, router *gin.Engine, logger log.Logger) error {
 	endpoints := MakeEndpoints(svc)
 
-	studyLogger := log.WithSuffix(appContext.Logger, "svc", "study")
+	studyLogger := log.WithSuffix(logger, "svc", "study")
 	endpoints.CreateStudyProjectEndpoint = logging.Middleware(studyLogger)(endpoints.CreateStudyProjectEndpoint)
 	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = logging.Middleware(studyLogger)(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
 
-	studyGroup := appContext.Router.Group("/study")
+	studyGroup := router.Group("/study")
 	studyGroup.POST("/projects", CreateStudyProjectHandler(endpoints.CreateStudyProjectEndpoint))
 	studyGroup.POST("/projects/cards", CreateOrReplaceStudyProjectCardsHandler(endpoints.CreateOrReplaceStudyProjectCardsEndpoint))
 

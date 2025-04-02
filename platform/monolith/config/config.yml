@@ -1,0 +1,13 @@
+server:
+  http-address: :8001
+
+
+study:
+  database:
+    migrationPath: "./services/study/migrations"
+    url:
+
+hello:
+  database:
+    migrationPath: "./services/hello/migrations"
+    url:

@@ -2,9 +2,14 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/pkg/errors"
+	"github.com/rchauhan9/reflash/monolith/common/configutil"
+	"github.com/rchauhan9/reflash/monolith/config"
 	"github.com/rchauhan9/reflash/monolith/services/hello"
 	"github.com/rchauhan9/reflash/monolith/services/study"
 	"github.com/rchauhan9/reflash/monolith/utils"
@@ -17,8 +22,17 @@ import (
 func realMain() int {
 	ctx := context.Background()
 
+	configPath := flag.String("config-dir", "./config", "Directory containing config.yml")
+	flag.Parse()
+
 	router := utils.NewRouter()
 	logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+
+	var conf *config.Config
+	err := configutil.LoadConfig(*configPath, logger, &conf)
+	if err != nil {
+		return 1
+	}
 
 	appContext := &utils.AppContext{
 		Context: ctx,
@@ -26,14 +40,14 @@ func realMain() int {
 		Logger:  logger,
 	}
 	hello.RegisterRoutes(appContext)
-	err := study.RegisterRoutes(appContext)
+	err = study.InitialiseService(appContext, conf)
 	if err != nil {
 		level.Error(logger).Log("err", errors.Wrap(err, "error registering study routes"))
 		return 1
 	}
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    conf.Server.HTTPAddress,
 		Handler: router,
 	}
 

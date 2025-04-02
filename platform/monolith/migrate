@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CURRENT_DIR="$(dirname -- ${0})"
+
+SERVICE="${SERVICE:-}"
+if [[ -z "$SERVICE" ]]; then
+  echo "Error: SERVICE not specified. Use like: SERVICE=svc1 ./migrate up"
+  exit 1
+fi
+
+DB_NAME="${DB_NAME:-$SERVICE}"
+
+DATABASE_URL="${DATABASE_URL:-postgres://postgres:password@localhost:5432/${DB_NAME}?sslmode=disable}"
+
+migrate -database "${DATABASE_URL}" -path "${CURRENT_DIR}/services/${SERVICE}/migrations" $@

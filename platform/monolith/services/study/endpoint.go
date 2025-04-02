@@ -3,6 +3,7 @@ package study
 import (
 	"context"
 	"github.com/go-kit/kit/endpoint"
+	"github.com/google/uuid"
 )
 
 type createStudyProjectRequest struct {
@@ -37,7 +38,8 @@ func MakeEndpoints(svc Service) Endpoints {
 func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createStudyProjectRequest)
-		studyProject, err := svc.CreateStudyProject(ctx, req.Name, req.Icon)
+		// TODO: get userID from context
+		studyProject, err := svc.CreateStudyProject(ctx, uuid.New().String(), req.Name, req.Icon)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +50,8 @@ func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateOrReplaceStudyProjectCardsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createOrReplaceStudyProjectCardsRequest)
-		cards, err := svc.CreateOrReplaceStudyProjectCards(ctx, req.StudyProjectID)
+		// TODO: get userID from context
+		cards, err := svc.CreateOrReplaceStudyProjectCards(ctx, uuid.New().String(), req.StudyProjectID)
 		if err != nil {
 			return nil, err
 		}

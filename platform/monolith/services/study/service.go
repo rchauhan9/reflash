@@ -7,8 +7,10 @@ import (
 )
 
 type Service interface {
-	CreateStudyProject(ctx context.Context, name string, icon *string) (StudyProject, error)
-	CreateOrReplaceStudyProjectCards(ctx context.Context, studyProjectID string) ([]StudyProjectCard, error)
+	ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error)
+	CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (StudyProject, error)
+	ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
+	CreateOrReplaceStudyProjectCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
 }
 
 func NewService(repository Repository, cardCreatorClient card_creator.Client) Service {
@@ -23,8 +25,16 @@ type service struct {
 	cardCreatorClient card_creator.Client
 }
 
-func (s *service) CreateStudyProject(ctx context.Context, name string, icon *string) (StudyProject, error) {
-	studyProjectId, err := s.repository.CreateStudyProject(ctx, name, icon)
+func (s *service) ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error) {
+	studyProjects, err := s.repository.ListStudyProjects(ctx, userID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not list study projects")
+	}
+	return studyProjects, nil
+}
+
+func (s *service) CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (StudyProject, error) {
+	studyProjectId, err := s.repository.CreateStudyProject(ctx, userID, name, icon)
 	if err != nil {
 		return StudyProject{}, errors.Wrapf(err, "could not create study project")
 	}
@@ -36,7 +46,15 @@ func (s *service) CreateStudyProject(ctx context.Context, name string, icon *str
 	}, nil
 }
 
-func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, studyProjectID string) ([]StudyProjectCard, error) {
+func (s *service) ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error) {
+	cards, err := s.repository.ListCards(ctx, userID, studyProjectID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not list study project cards")
+	}
+	return cards, nil
+}
+
+func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error) {
 
 	cards, err := s.cardCreatorClient.CreateCards(ctx)
 	if err != nil {
@@ -44,7 +62,7 @@ func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, studyPro
 	}
 
 	// in a transaction
-	err = s.repository.DeleteCards(ctx, studyProjectID)
+	err = s.repository.DeleteCards(ctx, userID, studyProjectID)
 
 	createCards := make([]CreateCard, len(cards))
 	for _, card := range cards {
@@ -55,7 +73,7 @@ func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, studyPro
 		})
 	}
 
-	newCards, err := s.repository.CreateCards(ctx, createCards)
+	newCards, err := s.repository.CreateCards(ctx, userID, createCards)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create cards in database")
 	}
