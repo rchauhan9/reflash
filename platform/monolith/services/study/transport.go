@@ -11,9 +11,8 @@ import (
 func RegisterRoutes(svc Service, router *gin.Engine, logger log.Logger) error {
 	endpoints := MakeEndpoints(svc)
 
-	studyLogger := log.WithSuffix(logger, "svc", "study")
-	endpoints.CreateStudyProjectEndpoint = logging.Middleware(studyLogger)(endpoints.CreateStudyProjectEndpoint)
-	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = logging.Middleware(studyLogger)(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
+	endpoints.CreateStudyProjectEndpoint = logging.Middleware(logger)(endpoints.CreateStudyProjectEndpoint)
+	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = logging.Middleware(logger)(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
 
 	studyGroup := router.Group("/study")
 	studyGroup.POST("/projects", CreateStudyProjectHandler(endpoints.CreateStudyProjectEndpoint))

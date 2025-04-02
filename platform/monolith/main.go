@@ -40,11 +40,8 @@ func realMain() int {
 		Logger:  logger,
 	}
 	hello.RegisterRoutes(appContext)
-	err = study.InitialiseService(appContext, conf)
-	if err != nil {
-		level.Error(logger).Log("err", errors.Wrap(err, "error registering study routes"))
-		return 1
-	}
+	studyServiceCleanup := study.InitialiseService(appContext, conf)
+	defer studyServiceCleanup()
 
 	srv := &http.Server{
 		Addr:    conf.Server.HTTPAddress,
