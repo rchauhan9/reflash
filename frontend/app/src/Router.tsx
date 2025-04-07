@@ -9,6 +9,8 @@ import Calendar from './pages/Calendar';
 import Notifications from './pages/Notifications';
 import LoginPage from '@/pages/auth/Login';
 import SignUpPage from '@/pages/auth/SignUp';
+import CreateProject from '@/pages/study/CreateProject';
+import EditProject from '@/pages/study/EditProject';
 
 export const router = createBrowserRouter(
   [
@@ -29,8 +31,12 @@ export const router = createBrowserRouter(
           element: <Home />,
         },
         {
-          path: 'work',
-          element: <Work />,
+          path: 'study/create',
+          element: <CreateProject />,
+        },
+        {
+          path: 'study/edit',
+          element: <EditProject />,
         },
         {
           path: 'calendar',

@@ -20,7 +20,8 @@ import (
 )
 
 func realMain() int {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	configPath := flag.String("config-dir", "./config", "Directory containing config.yml")
 	flag.Parse()
@@ -41,7 +42,6 @@ func realMain() int {
 	}
 	hello.RegisterRoutes(appContext)
 	studyServiceCleanup := study.InitialiseService(appContext, conf)
-	defer studyServiceCleanup()
 
 	srv := &http.Server{
 		Addr:    conf.Server.HTTPAddress,
@@ -49,9 +49,11 @@ func realMain() int {
 	}
 
 	defer func() {
+		level.Info(logger).Log("msg", "cleaning up monolith")
 		if err := srv.Shutdown(ctx); err != nil {
 			level.Error(logger).Log("err", errors.Wrap(err, "error shutting down http router"))
 		}
+		studyServiceCleanup()
 	}()
 
 	errs := make(chan error, 3)
@@ -63,10 +65,16 @@ func realMain() int {
 	}()
 	go func() {
 		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGINT)
-		errs <- errors.New((<-c).String())
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-c
+		level.Info(logger).Log("msg", "received signal", "signal", sig)
+		errs <- nil
 	}()
-	logger.Log("terminated", <-errs)
+	if err := <-errs; err != nil {
+		level.Error(logger).Log("terminated", err)
+	} else {
+		level.Info(logger).Log("msg", "terminated via signal")
+	}
 
 	return 0
 }
