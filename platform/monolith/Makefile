@@ -1,11 +1,13 @@
 include .env
 export $(shell sed 's/=.*//' .env)
 
-.PHONY: run docker-run
+.PHONY: run format docker-run
 
 run: docker-run
-	go run main.go
+	air
 
+format:
+	go fmt ./...
 
 docker-run:
 	$(MAKE) -C ../../infra/local docker-run

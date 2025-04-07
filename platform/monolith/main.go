@@ -56,7 +56,7 @@ func realMain() int {
 
 	errs := make(chan error, 3)
 	go func() {
-		level.Info(logger).Log("transport", "http", "address", ":8080", "msg", "listening")
+		level.Info(logger).Log("transport", "http", "address", conf.Server.HTTPAddress, "msg", "listening")
 		if err := srv.ListenAndServe(); err != nil {
 			errs <- err
 		}

@@ -32,8 +32,8 @@ func InitialiseService(appContext *utils.AppContext, config *config.Config) func
 	}
 	rep := NewRepository(pool)
 	createCardClient := card_creator.NewClient()
-	svc := NewService(rep, createCardClient)
 	studyLogger := log.WithSuffix(appContext.Logger, "svc", "study")
+	svc := NewService(rep, createCardClient, studyLogger)
 
 	err = RegisterRoutes(svc, appContext.Router, studyLogger)
 	if err != nil {

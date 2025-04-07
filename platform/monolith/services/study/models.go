@@ -8,7 +8,7 @@ type StudyProject struct {
 
 type StudyProjectCard struct {
 	ID             string
-	StudyProjectID string
+	StudyProjectID string `db:"project_id"`
 	Question       string
 	Answer         string
 }

@@ -14,7 +14,7 @@ type Repository interface {
 	CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (string, error)
 
 	ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
-	CreateCards(ctx context.Context, userID string, cards []CreateCard) ([]StudyProjectCard, error)
+	CreateCards(ctx context.Context, cards []CreateCard) ([]StudyProjectCard, error)
 	DeleteCards(ctx context.Context, userID string, studyProjectID string) error
 }
 
@@ -85,38 +85,42 @@ func (r *repository) ListCards(ctx context.Context, userID string, studyProjectI
 }
 
 type CreateCard struct {
+	UserID         string `json:"user_id"`
 	StudyProjectID string `json:"study_project_id"`
 	Question       string `json:"question"`
 	Answer         string `json:"answer"`
 }
 
-func (r *repository) CreateCards(ctx context.Context, userID string, cards []CreateCard) ([]StudyProjectCard, error) {
+func (r *repository) CreateCards(ctx context.Context, cards []CreateCard) ([]StudyProjectCard, error) {
 	query := `
 		INSERT INTO project_card (user_id, project_id, question, answer)
 		VALUES %s
 		RETURNING id, project_id, question, answer
 	`
 	numberOfColumns := 4
-	values := make([]string, 0, len(cards))
-	args := make([]interface{}, 0, len(cards)*numberOfColumns)
+	values := make([]string, 0)
+	args := make([]interface{}, 0)
+	fmt.Printf("args %+v\n", args)
 	for i, row := range cards {
 		values = append(values, fmt.Sprintf("($%d, $%d, $%d, $%d)", i*numberOfColumns+1, i*numberOfColumns+2, i*numberOfColumns+3, i*numberOfColumns+4))
-		args = append(args, userID, row.StudyProjectID, row.Question, row.Answer)
+		args = append(args, row.UserID, row.StudyProjectID, row.Question, row.Answer)
+		fmt.Printf("row: %+v\n", row)
+		fmt.Printf("values: %+v\n", values)
+		fmt.Printf("args: %+v\n", args)
 	}
 
 	sql := fmt.Sprintf(query, strings.Join(values, ", "))
+	fmt.Printf(sql)
+	fmt.Printf("%+v\n", args)
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to insert study project cards into database")
 	}
-	var cardsInserted []StudyProjectCard
-	for rows.Next() {
-		var card StudyProjectCard
-		if err := rows.Scan(&card.ID, &card.StudyProjectID, &card.Question, &card.Answer); err != nil {
-			return nil, errors.Wrap(err, "error scanning row from database")
-		}
-		cardsInserted = append(cardsInserted, card)
+	cardsInserted, err := pgx.CollectRows(rows, pgx.RowToStructByName[StudyProjectCard])
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to collect study project cards")
 	}
+	fmt.Sprintf("cards inserted here mofo %+v\n", cardsInserted)
 	return cardsInserted, nil
 }
 

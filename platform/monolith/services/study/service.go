@@ -2,6 +2,8 @@ package study
 
 import (
 	"context"
+	"fmt"
+	"github.com/go-kit/log"
 	"github.com/pkg/errors"
 	"github.com/rchauhan9/reflash/monolith/common/clients/card_creator"
 )
@@ -13,16 +15,18 @@ type Service interface {
 	CreateOrReplaceStudyProjectCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
 }
 
-func NewService(repository Repository, cardCreatorClient card_creator.Client) Service {
+func NewService(repository Repository, cardCreatorClient card_creator.Client, logger log.Logger) Service {
 	return &service{
 		repository:        repository,
 		cardCreatorClient: cardCreatorClient,
+		logger:            logger,
 	}
 }
 
 type service struct {
 	repository        Repository
 	cardCreatorClient card_creator.Client
+	logger            log.Logger
 }
 
 func (s *service) ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error) {
@@ -57,6 +61,7 @@ func (s *service) ListCards(ctx context.Context, userID string, studyProjectID s
 func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error) {
 
 	cards, err := s.cardCreatorClient.CreateCards(ctx)
+	s.logger.Log("msg", "created cards via client", "cards", fmt.Sprintf("%+v", cards))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create cards via client")
 	}
@@ -65,15 +70,16 @@ func (s *service) CreateOrReplaceStudyProjectCards(ctx context.Context, userID s
 	err = s.repository.DeleteCards(ctx, userID, studyProjectID)
 
 	createCards := make([]CreateCard, len(cards))
-	for _, card := range cards {
-		createCards = append(createCards, CreateCard{
+	for i, card := range cards {
+		createCards[i] = CreateCard{
+			UserID:         userID,
 			StudyProjectID: studyProjectID,
 			Question:       card.Question,
 			Answer:         card.Answer,
-		})
+		}
 	}
 
-	newCards, err := s.repository.CreateCards(ctx, userID, createCards)
+	newCards, err := s.repository.CreateCards(ctx, createCards)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create cards in database")
 	}
