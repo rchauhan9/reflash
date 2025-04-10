@@ -6,11 +6,13 @@ import (
 	"github.com/go-kit/log"
 	"github.com/pkg/errors"
 	"github.com/rchauhan9/reflash/monolith/common/clients/card_creator"
+	"mime/multipart"
 )
 
 type Service interface {
 	ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error)
 	CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (StudyProject, error)
+	CreateProjectFile(ctx context.Context, userID string, studyProjectID string, filename string, file *multipart.FileHeader) (*string, error)
 	ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
 	CreateOrReplaceStudyProjectCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
 }
@@ -48,6 +50,29 @@ func (s *service) CreateStudyProject(ctx context.Context, userID string, name st
 		Name: name,
 		Icon: icon,
 	}, nil
+}
+
+func (s *service) CreateProjectFile(ctx context.Context, userID string, studyProjectID string, filename string, file *multipart.FileHeader) (*string, error) {
+	openedFile, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer openedFile.Close()
+
+	bucket := "./output/" + userID
+	key := fmt.Sprintf("/%v/%v", studyProjectID, filename)
+	err = UploadFile(ctx, bucket, key, openedFile)
+	if err != nil {
+		return nil, err
+	}
+
+	path := bucket + key
+	fileReferenceID, err := s.repository.CreateProjectFile(ctx, userID, studyProjectID, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fileReferenceID, nil
 }
 
 func (s *service) ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error) {

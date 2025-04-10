@@ -2,8 +2,10 @@ package study
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/google/uuid"
+	"mime/multipart"
 )
 
 type listStudyProjectsRequest struct{}
@@ -19,6 +21,16 @@ type createStudyProjectRequest struct {
 
 type createStudyProjectResponse struct {
 	StudyProject StudyProject `json:"study_project"`
+}
+
+type createProjectFileRequest struct {
+	StudyProjectID string `json:"study_project_id"`
+	Filename       string `json:"filename"`
+	File           *multipart.FileHeader
+}
+
+type createProjectFileResponse struct {
+	ProjectFileID string `json:"project_file_id"`
 }
 
 type listCardsRequest struct {
@@ -40,6 +52,7 @@ type createOrReplaceStudyProjectCardsResponse struct {
 type Endpoints struct {
 	ListStudyProjectsEndpoint                endpoint.Endpoint
 	CreateStudyProjectEndpoint               endpoint.Endpoint
+	CreateProjectFileEndpoint                endpoint.Endpoint
 	ListCardsEndpoint                        endpoint.Endpoint
 	CreateOrReplaceStudyProjectCardsEndpoint endpoint.Endpoint
 }
@@ -48,6 +61,7 @@ func MakeEndpoints(svc Service) Endpoints {
 	return Endpoints{
 		ListStudyProjectsEndpoint:                MakeListStudyProjectsEndpoint(svc),
 		CreateStudyProjectEndpoint:               MakeCreateStudyProjectEndpoint(svc),
+		CreateProjectFileEndpoint:                MakeCreateProjectFileEndpoint(svc),
 		ListCardsEndpoint:                        MakeListCardsEndpoint(svc),
 		CreateOrReplaceStudyProjectCardsEndpoint: MakeCreateOrReplaceStudyProjectCardsEndpoint(svc),
 	}
@@ -76,6 +90,19 @@ func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 			return nil, err
 		}
 		return createStudyProjectResponse{StudyProject: studyProject}, nil
+	}
+}
+
+func MakeCreateProjectFileEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(createProjectFileRequest)
+		userID := ctx.Value("userID").(string)
+		fmt.Printf("userID: %s\n", userID)
+		file, err := svc.CreateProjectFile(ctx, userID, req.StudyProjectID, req.Filename, req.File)
+		if err != nil {
+			return nil, err
+		}
+		return createProjectFileResponse{ProjectFileID: *file}, nil
 	}
 }
 

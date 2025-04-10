@@ -13,6 +13,8 @@ type Repository interface {
 	ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error)
 	CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (string, error)
 
+	CreateProjectFile(ctx context.Context, userID string, studyProjectID string, filepath string) (string, error)
+
 	ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error)
 	CreateCards(ctx context.Context, cards []CreateCard) ([]StudyProjectCard, error)
 	DeleteCards(ctx context.Context, userID string, studyProjectID string) error
@@ -31,7 +33,7 @@ type repository struct {
 func (r *repository) ListStudyProjects(ctx context.Context, userID string) ([]StudyProject, error) {
 	query := `
 		SELECT id, name, icon
-		FROM project
+		FROM projects
 		WHERE user_id = $1
 	`
 	rows, err := r.pool.Query(ctx, query, userID)
@@ -47,7 +49,7 @@ func (r *repository) ListStudyProjects(ctx context.Context, userID string) ([]St
 
 func (r *repository) CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (string, error) {
 	query := `
-		INSERT INTO project (user_id, name, icon)
+		INSERT INTO projects (user_id, name, icon)
 		VALUES ($1, $2, $3)
 		RETURNING id
 	`
@@ -62,6 +64,21 @@ func (r *repository) CreateStudyProject(ctx context.Context, userID string, name
 
 }
 
+func (r *repository) CreateProjectFile(ctx context.Context, userID string, studyProjectID string, filepath string) (string, error) {
+	query := `
+		INSERT INTO project_files (user_id, project_id, filepath)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`
+	row := r.pool.QueryRow(ctx, query, userID, studyProjectID, filepath)
+	var fileID string
+	err := row.Scan(&fileID)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to insert study project file into database")
+	}
+	return fileID, nil
+}
+
 func (r *repository) ListCards(ctx context.Context, userID string, studyProjectID string) ([]StudyProjectCard, error) {
 	query := `
 		SELECT 
@@ -69,7 +86,7 @@ func (r *repository) ListCards(ctx context.Context, userID string, studyProjectI
 		    project_id, 
 		    question, 
 		    answer
-		FROM project_card
+		FROM project_cards
 		WHERE user_id = $1
 			AND project_id = $2
 	`
@@ -93,25 +110,19 @@ type CreateCard struct {
 
 func (r *repository) CreateCards(ctx context.Context, cards []CreateCard) ([]StudyProjectCard, error) {
 	query := `
-		INSERT INTO project_card (user_id, project_id, question, answer)
+		INSERT INTO project_cards (user_id, project_id, question, answer)
 		VALUES %s
 		RETURNING id, project_id, question, answer
 	`
 	numberOfColumns := 4
 	values := make([]string, 0)
 	args := make([]interface{}, 0)
-	fmt.Printf("args %+v\n", args)
 	for i, row := range cards {
 		values = append(values, fmt.Sprintf("($%d, $%d, $%d, $%d)", i*numberOfColumns+1, i*numberOfColumns+2, i*numberOfColumns+3, i*numberOfColumns+4))
 		args = append(args, row.UserID, row.StudyProjectID, row.Question, row.Answer)
-		fmt.Printf("row: %+v\n", row)
-		fmt.Printf("values: %+v\n", values)
-		fmt.Printf("args: %+v\n", args)
 	}
 
 	sql := fmt.Sprintf(query, strings.Join(values, ", "))
-	fmt.Printf(sql)
-	fmt.Printf("%+v\n", args)
 	rows, err := r.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to insert study project cards into database")
@@ -120,13 +131,12 @@ func (r *repository) CreateCards(ctx context.Context, cards []CreateCard) ([]Stu
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to collect study project cards")
 	}
-	fmt.Sprintf("cards inserted here mofo %+v\n", cardsInserted)
 	return cardsInserted, nil
 }
 
 func (r *repository) DeleteCards(ctx context.Context, userID string, studyProjectID string) error {
 	query := `
-		DELETE FROM project_card
+		DELETE FROM project_cards
 		WHERE user_id = $1
 			AND project_id = $2
 	`
