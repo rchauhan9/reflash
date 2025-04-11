@@ -13,10 +13,6 @@ export default function CreateProject() {
       <Card className='mt-2 mx-4 py-4'>
         <CreateProjectForm />
       </Card>
-      {/* <Card className="max-w-md mt-2 mx-4 py-4" > */}
-      {/*   <CreateProjectForm /> */}
-      {/* </Card> */}
-      {/* </div> */}
     </>
   );
 }

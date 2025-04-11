@@ -1,9 +1,9 @@
 package study
 
 type StudyProject struct {
-	ID   string
-	Name string
-	Icon *string
+	ID   string  `json:"id"`
+	Name string  `json:"name"`
+	Icon *string `json:"icon"`
 }
 
 type StudyProjectCard struct {

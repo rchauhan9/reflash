@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-kit/kit/endpoint"
-	"github.com/google/uuid"
 	"mime/multipart"
 )
 
@@ -70,8 +69,8 @@ func MakeEndpoints(svc Service) Endpoints {
 func MakeListStudyProjectsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		_ = request.(listStudyProjectsRequest)
-		// TODO: get userID from context
-		userID := uuid.New().String()
+		userID := ctx.Value("userID").(string)
+		fmt.Printf("userID: %s\n", userID)
 		studyProjects, err := svc.ListStudyProjects(ctx, userID)
 		if err != nil {
 			return nil, err
@@ -83,8 +82,8 @@ func MakeListStudyProjectsEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createStudyProjectRequest)
-		// TODO: get userID from context
-		userID := uuid.New().String()
+		userID := ctx.Value("userID").(string)
+		fmt.Printf("userID: %s\n", userID)
 		studyProject, err := svc.CreateStudyProject(ctx, userID, req.Name, req.Icon)
 		if err != nil {
 			return nil, err
@@ -109,8 +108,8 @@ func MakeCreateProjectFileEndpoint(svc Service) endpoint.Endpoint {
 func MakeListCardsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(listCardsRequest)
-		// TODO: get userID from context
-		userID := uuid.New().String()
+		userID := ctx.Value("userID").(string)
+		fmt.Printf("userID: %s\n", userID)
 		cards, err := svc.ListCards(ctx, userID, req.StudyProjectID)
 		if err != nil {
 			return nil, err
@@ -122,8 +121,8 @@ func MakeListCardsEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateOrReplaceStudyProjectCardsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createOrReplaceStudyProjectCardsRequest)
-		// TODO: get userID from context
-		userID := uuid.New().String()
+		userID := ctx.Value("userID").(string)
+		fmt.Printf("userID: %s\n", userID)
 		cards, err := svc.CreateOrReplaceStudyProjectCards(ctx, userID, req.StudyProjectID)
 		if err != nil {
 			return nil, err

@@ -14,11 +14,15 @@ func RegisterRoutes(svc Service, router *gin.Engine, logger log.Logger) error {
 	endpoints := MakeEndpoints(svc)
 
 	endpoints.ListStudyProjectsEndpoint = logging.Middleware(logger)(endpoints.ListStudyProjectsEndpoint)
+	endpoints.ListStudyProjectsEndpoint = auth.Middleware()(endpoints.ListStudyProjectsEndpoint)
 	endpoints.CreateStudyProjectEndpoint = logging.Middleware(logger)(endpoints.CreateStudyProjectEndpoint)
+	endpoints.CreateStudyProjectEndpoint = auth.Middleware()(endpoints.CreateStudyProjectEndpoint)
 	endpoints.CreateProjectFileEndpoint = logging.Middleware(logger)(endpoints.CreateProjectFileEndpoint)
 	endpoints.CreateProjectFileEndpoint = auth.Middleware()(endpoints.CreateProjectFileEndpoint)
 	endpoints.ListCardsEndpoint = logging.Middleware(logger)(endpoints.ListCardsEndpoint)
+	endpoints.ListCardsEndpoint = auth.Middleware()(endpoints.ListCardsEndpoint)
 	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = logging.Middleware(logger)(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
+	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = auth.Middleware()(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
 
 	studyGroup := router.Group("/study")
 	studyGroup.GET("/projects", ListStudyProjectsHandler(endpoints.ListStudyProjectsEndpoint))

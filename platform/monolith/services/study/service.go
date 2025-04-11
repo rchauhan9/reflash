@@ -40,6 +40,8 @@ func (s *service) ListStudyProjects(ctx context.Context, userID string) ([]Study
 }
 
 func (s *service) CreateStudyProject(ctx context.Context, userID string, name string, icon *string) (StudyProject, error) {
+
+	fmt.Printf("name: %s, icon: %s", name, icon)
 	studyProjectId, err := s.repository.CreateStudyProject(ctx, userID, name, icon)
 	if err != nil {
 		return StudyProject{}, errors.Wrapf(err, "could not create study project")

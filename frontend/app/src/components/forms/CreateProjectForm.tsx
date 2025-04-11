@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CardContent } from '@/components/ui/card';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { useCreateProject } from '@/hooks/api/use-study';
 
 interface FormValues {
   name: string;
@@ -18,7 +19,7 @@ const validationSchema = Yup.object({
   name: Yup.string().required('Name is required'),
   icon: Yup.string().required('Icon is required'),
   description: Yup.string().required('Description is required'),
-  files: Yup.array().min(1, 'At least one file is required'),
+  files: Yup.array().min(0, ''),
 });
 
 const CreateProjectForm: React.FC = () => {
@@ -26,6 +27,8 @@ const CreateProjectForm: React.FC = () => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const today = new Date();
   const currentMonthYear = today.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const createProject = useCreateProject()
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -37,6 +40,9 @@ const CreateProjectForm: React.FC = () => {
     validationSchema,
     onSubmit: (values: FormValues, actions: FormikHelpers<FormValues>) => {
       console.log('Form values:', values);
+      const project = { name: values.name, icon: values.icon, description: values.description }
+      console.log("Project:", project);
+      createProject.mutate(project)
     },
   });
 
@@ -164,7 +170,7 @@ const CreateProjectForm: React.FC = () => {
         </div>
 
         <div className='flex justify-end'>
-          <Button type='submit'>Submit</Button>
+          <Button type='submit' disabled={createProject.isLoading}>{createProject.isLoading ? 'Submitting...' : 'Submit'}</Button>
         </div>
       </form>
     </CardContent>
