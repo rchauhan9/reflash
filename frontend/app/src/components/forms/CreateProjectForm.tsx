@@ -28,7 +28,7 @@ const CreateProjectForm: React.FC = () => {
   const today = new Date();
   const currentMonthYear = today.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  const createProject = useCreateProject()
+  const createProject = useCreateProject();
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -40,9 +40,9 @@ const CreateProjectForm: React.FC = () => {
     validationSchema,
     onSubmit: (values: FormValues, actions: FormikHelpers<FormValues>) => {
       console.log('Form values:', values);
-      const project = { name: values.name, icon: values.icon, description: values.description }
-      console.log("Project:", project);
-      createProject.mutate(project)
+      const project = { name: values.name, icon: values.icon, description: values.description };
+      console.log('Project:', project);
+      createProject.mutate(project);
     },
   });
 
@@ -170,7 +170,9 @@ const CreateProjectForm: React.FC = () => {
         </div>
 
         <div className='flex justify-end'>
-          <Button type='submit' disabled={createProject.isLoading}>{createProject.isLoading ? 'Submitting...' : 'Submit'}</Button>
+          <Button type='submit' disabled={createProject.isLoading}>
+            {createProject.isLoading ? 'Submitting...' : 'Submit'}
+          </Button>
         </div>
       </form>
     </CardContent>

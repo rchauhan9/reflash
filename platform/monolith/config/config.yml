@@ -11,3 +11,6 @@ hello:
   database:
     migrationPath: "./services/hello/migrations"
     url:
+
+clerk:
+  api-key:

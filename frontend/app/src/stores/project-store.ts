@@ -1,11 +1,5 @@
-
 import { create } from 'zustand';
 
+interface ProjectStore {}
 
-interface ProjectStore {
-}
-
-export const useProjectStore = create<ProjectStore>((set) => ({
-
-
-}));
+export const useProjectStore = create<ProjectStore>((set) => ({}));

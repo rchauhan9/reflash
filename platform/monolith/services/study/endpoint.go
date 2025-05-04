@@ -2,8 +2,8 @@ package study
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-kit/kit/endpoint"
+	"github.com/rchauhan9/reflash/monolith/common/auth"
 	"mime/multipart"
 )
 
@@ -69,9 +69,8 @@ func MakeEndpoints(svc Service) Endpoints {
 func MakeListStudyProjectsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		_ = request.(listStudyProjectsRequest)
-		userID := ctx.Value("userID").(string)
-		fmt.Printf("userID: %s\n", userID)
-		studyProjects, err := svc.ListStudyProjects(ctx, userID)
+		user := ctx.Value("user").(auth.User)
+		studyProjects, err := svc.ListStudyProjects(ctx, user.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -82,9 +81,8 @@ func MakeListStudyProjectsEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createStudyProjectRequest)
-		userID := ctx.Value("userID").(string)
-		fmt.Printf("userID: %s\n", userID)
-		studyProject, err := svc.CreateStudyProject(ctx, userID, req.Name, req.Icon)
+		user := ctx.Value("user").(auth.User)
+		studyProject, err := svc.CreateStudyProject(ctx, user.ID, req.Name, req.Icon)
 		if err != nil {
 			return nil, err
 		}
@@ -95,9 +93,8 @@ func MakeCreateStudyProjectEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateProjectFileEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createProjectFileRequest)
-		userID := ctx.Value("userID").(string)
-		fmt.Printf("userID: %s\n", userID)
-		file, err := svc.CreateProjectFile(ctx, userID, req.StudyProjectID, req.Filename, req.File)
+		user := ctx.Value("user").(auth.User)
+		file, err := svc.CreateProjectFile(ctx, user.ID, req.StudyProjectID, req.Filename, req.File)
 		if err != nil {
 			return nil, err
 		}
@@ -108,9 +105,8 @@ func MakeCreateProjectFileEndpoint(svc Service) endpoint.Endpoint {
 func MakeListCardsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(listCardsRequest)
-		userID := ctx.Value("userID").(string)
-		fmt.Printf("userID: %s\n", userID)
-		cards, err := svc.ListCards(ctx, userID, req.StudyProjectID)
+		user := ctx.Value("user").(auth.User)
+		cards, err := svc.ListCards(ctx, user.ID, req.StudyProjectID)
 		if err != nil {
 			return nil, err
 		}
@@ -121,9 +117,8 @@ func MakeListCardsEndpoint(svc Service) endpoint.Endpoint {
 func MakeCreateOrReplaceStudyProjectCardsEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(createOrReplaceStudyProjectCardsRequest)
-		userID := ctx.Value("userID").(string)
-		fmt.Printf("userID: %s\n", userID)
-		cards, err := svc.CreateOrReplaceStudyProjectCards(ctx, userID, req.StudyProjectID)
+		user := ctx.Value("user").(auth.User)
+		cards, err := svc.CreateOrReplaceStudyProjectCards(ctx, user.ID, req.StudyProjectID)
 		if err != nil {
 			return nil, err
 		}

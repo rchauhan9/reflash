@@ -1,11 +1,12 @@
 package study
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/log"
-	"github.com/rchauhan9/reflash/monolith/common/middlewares/auth"
+	ginmiddleware "github.com/rchauhan9/reflash/monolith/common/middlewares/gin"
 	"github.com/rchauhan9/reflash/monolith/common/middlewares/logging"
 	"net/http"
 )
@@ -14,17 +15,13 @@ func RegisterRoutes(svc Service, router *gin.Engine, logger log.Logger) error {
 	endpoints := MakeEndpoints(svc)
 
 	endpoints.ListStudyProjectsEndpoint = logging.Middleware(logger)(endpoints.ListStudyProjectsEndpoint)
-	endpoints.ListStudyProjectsEndpoint = auth.Middleware()(endpoints.ListStudyProjectsEndpoint)
 	endpoints.CreateStudyProjectEndpoint = logging.Middleware(logger)(endpoints.CreateStudyProjectEndpoint)
-	endpoints.CreateStudyProjectEndpoint = auth.Middleware()(endpoints.CreateStudyProjectEndpoint)
 	endpoints.CreateProjectFileEndpoint = logging.Middleware(logger)(endpoints.CreateProjectFileEndpoint)
-	endpoints.CreateProjectFileEndpoint = auth.Middleware()(endpoints.CreateProjectFileEndpoint)
 	endpoints.ListCardsEndpoint = logging.Middleware(logger)(endpoints.ListCardsEndpoint)
-	endpoints.ListCardsEndpoint = auth.Middleware()(endpoints.ListCardsEndpoint)
 	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = logging.Middleware(logger)(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
-	endpoints.CreateOrReplaceStudyProjectCardsEndpoint = auth.Middleware()(endpoints.CreateOrReplaceStudyProjectCardsEndpoint)
 
 	studyGroup := router.Group("/study")
+	studyGroup.Use(ginmiddleware.RequiresAuthentication())
 	studyGroup.GET("/projects", ListStudyProjectsHandler(endpoints.ListStudyProjectsEndpoint))
 	studyGroup.POST("/projects", CreateStudyProjectHandler(endpoints.CreateStudyProjectEndpoint))
 	studyGroup.POST("/projects/:projectID/files", CreateProjectFile(endpoints.CreateProjectFileEndpoint))
@@ -41,8 +38,8 @@ func ListStudyProjectsHandler(endpoint endpoint.Endpoint) func(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		response, err := endpoint(c.Request.Context(), req)
+		ctx := context.WithValue(c.Request.Context(), "user", c.Value("user"))
+		response, err := endpoint(ctx, req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -59,8 +56,8 @@ func CreateStudyProjectHandler(endpoint endpoint.Endpoint) func(c *gin.Context) 
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		response, err := endpoint(c.Request.Context(), req)
+		ctx := context.WithValue(c.Request.Context(), "user", c.Value("user"))
+		response, err := endpoint(ctx, req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -77,8 +74,8 @@ func CreateProjectFile(endpoint endpoint.Endpoint) func(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		response, err := endpoint(c.Request.Context(), req)
+		ctx := context.WithValue(c.Request.Context(), "user", c.Value("user"))
+		response, err := endpoint(ctx, req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -95,8 +92,8 @@ func ListCardsHandler(endpoint endpoint.Endpoint) func(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		response, err := endpoint(c.Request.Context(), req)
+		ctx := context.WithValue(c.Request.Context(), "user", c.Value("user"))
+		response, err := endpoint(ctx, req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -114,7 +111,8 @@ func CreateOrReplaceStudyProjectCardsHandler(endpoint endpoint.Endpoint) func(c 
 			return
 		}
 
-		response, err := endpoint(c.Request.Context(), req)
+		ctx := context.WithValue(c.Request.Context(), "user", c.Value("user"))
+		response, err := endpoint(ctx, req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

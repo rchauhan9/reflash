@@ -14,16 +14,14 @@ export default function EditProject() {
       <PageHeader>
         <PageHeaderHeading>Edit Project</PageHeaderHeading>
       </PageHeader>
-      {
-        data['study_projects'].map((project: any) => (
-          <Card key={project.id}>
-            <CardHeader>
-              <CardTitle>{project.name}</CardTitle>
-              <CardDescription>{project.icon}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))
-      }
+      {data['study_projects'].map((project: any) => (
+        <Card key={project.id}>
+          <CardHeader>
+            <CardTitle>{project.name}</CardTitle>
+            <CardDescription>{project.icon}</CardDescription>
+          </CardHeader>
+        </Card>
+      ))}
     </>
   );
 }

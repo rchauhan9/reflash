@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"flag"
-	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/pkg/errors"
-	"github.com/rchauhan9/reflash/monolith/common/configutil"
 	"github.com/rchauhan9/reflash/monolith/config"
+	"github.com/rchauhan9/reflash/monolith/logging"
 	"github.com/rchauhan9/reflash/monolith/services/hello"
 	"github.com/rchauhan9/reflash/monolith/services/study"
 	"github.com/rchauhan9/reflash/monolith/utils"
@@ -23,17 +21,10 @@ func realMain() int {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	configPath := flag.String("config-dir", "./config", "Directory containing config.yml")
-	flag.Parse()
-
 	router := utils.NewRouter()
-	logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger := logging.GetLogger()
 
-	var conf *config.Config
-	err := configutil.LoadConfig(*configPath, logger, &conf)
-	if err != nil {
-		return 1
-	}
+	conf := config.GetConfig()
 
 	appContext := &utils.AppContext{
 		Context: ctx,
